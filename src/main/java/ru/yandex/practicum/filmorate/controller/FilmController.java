@@ -1,20 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.validation.FilmValidator;
 
 import java.util.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
@@ -31,7 +29,7 @@ public class FilmController {
     public Film updateFilm(@Valid @RequestBody Film film) throws NotFoundException {
         log.info("Получен запрос на обновление фильма с ID: {}", film.getId());
 
-        if (FilmValidator.isFilmNotFound(films, film)) {
+        if (!films.containsKey(film.getId())) {
             throw new NotFoundException("Такого фильма нет");
         }
 
@@ -45,7 +43,7 @@ public class FilmController {
         return new ArrayList<>(films.values());
     }
 
-    public int getNextId() {
+    private int getNextId() {
         int currentMaxId = films.keySet()
                 .stream()
                 .mapToInt(Integer::intValue)

@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,14 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
 import ru.yandex.practicum.filmorate.validation.UserValidator;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Integer, User> users = new HashMap<>();
 
     @PostMapping
@@ -39,7 +37,7 @@ public class UserController {
     public User updateUser(@Valid @RequestBody User updatedUser) throws NotFoundException {
         log.debug("Обновление пользователя: {}", updatedUser);
 
-        if (UserValidator.isUserNotFound(users, updatedUser)) {
+        if (!users.containsKey(updatedUser.getId())) {
             throw new NotFoundException("Такого пользователя нет");
         }
 
@@ -57,7 +55,7 @@ public class UserController {
         return new ArrayList<>(users.values());
     }
 
-    public int getNextId() {
+    private int getNextId() {
         int currentMaxId = users.keySet()
                 .stream()
                 .mapToInt(Integer::intValue)
