@@ -1,21 +1,26 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.validation.FilmValidator;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Film addFilm(Film film) {
@@ -23,7 +28,7 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        checkFilmIsNotNull(film, film.getId());
+        checkFilmExists(film.getId());
         return filmStorage.updateFilm(film);
     }
 
@@ -32,31 +37,36 @@ public class FilmService {
     }
 
     public Film getFilmById(Integer id) {
-        Film film = filmStorage.getFilmById(id);
-
-        checkFilmIsNotNull(film, id);
+        checkFilmExists(id);
 
         return filmStorage.getFilmById(id);
     }
 
     public void addLikeToFilm(Integer filmId, Integer userId) {
-        Film film = filmStorage.getFilmById(filmId);
+        checkFilmExists(filmId);
+        checkUserExists(userId);
 
-        checkFilmIsNotNull(film, film.getId());
-        checkUserExist(userId);
+        Film film = filmStorage.getFilmById(filmId);
 
         film.getLikes().add(userId);
         filmStorage.updateFilm(film);
+        log.debug("Лайк добавлен фильму {} от пользователя {}", filmId, userId);
     }
 
     public void removeLikeToFilm(Integer filmId, Integer userId) {
+
+        checkFilmExists(filmId);
+        checkUserExists(userId);
+
         Film film = filmStorage.getFilmById(filmId);
 
-        checkFilmIsNotNull(film, film.getId());
-        checkUserExist(userId);
+        if (!film.getLikes().contains(userId)) {
+            throw new NotFoundException(String.format("Лайк от пользователя %s фильму %s", userId, filmId));
+        }
 
         film.getLikes().remove(userId);
         filmStorage.updateFilm(film);
+        log.debug("Лайк удален по фильму {} от пользователя {}", filmId, userId);
     }
 
     public List<Film> getPopularFilms(Integer count) {
@@ -69,15 +79,19 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    private void checkFilmIsNotNull(Film film, Integer id) {
-        if (FilmValidator.isFilmNotFound(getAllFilms(), film)) {
-            throw new NotFoundException(String.format("Фильм с id %s не найден", id));
+    private void checkFilmExists(Integer filmId) {
+        Film film = filmStorage.getFilmById(filmId);
+        if (film == null) {
+            log.warn("Фильм с id {} не найден", filmId);
+            throw new NotFoundException(String.format("Фильм с id %s не найден", filmId));
         }
     }
 
-    private void checkUserExist(Integer userId) {
-        if (userId <= 0) {
-            throw new NotFoundException(String.format("Пользователя с id %s не существует", userId));
+    private void checkUserExists(Integer userId) {
+        User user = userStorage.getUserById(userId);
+        if (user == null) {
+            log.warn("Пользователь с id {} не найден", userId);
+            throw new NotFoundException(String.format("Пользователь с id %s не найден", userId));
         }
     }
 }
