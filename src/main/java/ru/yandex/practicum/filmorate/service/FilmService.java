@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,7 +31,7 @@ public class FilmService {
         return filmStorage.updateFilm(film);
     }
 
-    public Map<Integer, Film> getAllFilms() {
+    public List<Film> getAllFilms() {
         return filmStorage.getAllFilms();
     }
 
@@ -72,7 +71,6 @@ public class FilmService {
     public List<Film> getPopularFilms(Integer count) {
         return filmStorage
                 .getAllFilms()
-                .values()
                 .stream()
                 .sorted((Film film1, Film film2) -> film2.getLikes().size() - film1.getLikes().size())
                 .limit(count)
