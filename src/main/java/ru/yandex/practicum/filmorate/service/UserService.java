@@ -47,7 +47,6 @@ public class UserService {
     public List<User> getUserFriends(Integer id) {
         checkUserIsNotNull(id);
         User user = getUserById(id);
-        List<User> users = getAllUsers();
 
         return user
                 .getFriends()
@@ -89,8 +88,6 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Integer userId, Integer otherUserId) {
-        List<User> users = getAllUsers();
-
         checkUserIsNotNull(userId);
         checkUserIsNotNull(otherUserId);
 
