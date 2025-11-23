@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.List;
 
 
 @Slf4j
@@ -43,7 +42,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getUserFriends(@PathVariable("id") Integer id) {
+    public Collection<User> getUserFriends(@PathVariable("id") Integer id) {
         return userService.getUserFriends(id);
     }
 
@@ -58,7 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonUser(@PathVariable("id") Integer id, @PathVariable("otherId") Integer otherId) {
+    public Collection<User> getCommonUser(@PathVariable("id") Integer id, @PathVariable("otherId") Integer otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 }
