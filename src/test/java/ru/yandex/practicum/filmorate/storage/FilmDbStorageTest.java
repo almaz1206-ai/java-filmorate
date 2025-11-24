@@ -21,10 +21,12 @@ import ru.yandex.practicum.filmorate.storage.mpa.MpaMapper;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
 @Import({
@@ -66,7 +68,10 @@ class FilmDbStorageTest {
                 .duration(100)
                 .mpa(new Mpa(1, null))
                 .rate(5)
-                .genres(List.of(new Genre(1, null)))
+                .genres(Set.of(
+                        new Genre(1, "Комедия"),
+                        new Genre(2, "Драма")
+                ))
                 .build();
 
         savedFilm = filmDbStorage.addFilm(testFilm);
@@ -81,8 +86,13 @@ class FilmDbStorageTest {
         assertThat(savedFilm).hasFieldOrPropertyWithValue("duration", testFilm.getDuration());
         assertThat(savedFilm).hasFieldOrPropertyWithValue("rate", testFilm.getRate());
 
-        assertEquals(1, savedFilm.getGenres().size());
-        assertEquals("Комедия", savedFilm.getGenres().iterator().next().getName());
+        assertEquals(2, savedFilm.getGenres().size());
+        Set<String> genreNames = savedFilm.getGenres().stream()
+                .map(Genre::getName)
+                .collect(Collectors.toSet());
+        assertTrue(genreNames.contains("Комедия"));
+        assertTrue(genreNames.contains("Драма"));
+
         assertEquals(testFilm.getMpa().getId(), savedFilm.getMpa().getId());
         assertEquals("G", savedFilm.getMpa().getName());
     }
@@ -98,8 +108,14 @@ class FilmDbStorageTest {
         assertThat(filmFromDB).hasFieldOrPropertyWithValue("duration", savedFilm.getDuration());
         assertThat(filmFromDB).hasFieldOrPropertyWithValue("rate", savedFilm.getRate());
 
-        assertEquals(1, filmFromDB.getGenres().size());
-        assertEquals("Комедия", filmFromDB.getGenres().iterator().next().getName());
+        assertEquals(2, filmFromDB.getGenres().size());
+
+        Set<String> genreNames = filmFromDB.getGenres().stream()
+                .map(Genre::getName)
+                .collect(java.util.stream.Collectors.toSet());
+        assertTrue(genreNames.contains("Комедия"));
+        assertTrue(genreNames.contains("Драма"));
+
         assertEquals(savedFilm.getMpa().getId(), filmFromDB.getMpa().getId());
         assertEquals("G", filmFromDB.getMpa().getName());
     }
@@ -109,6 +125,9 @@ class FilmDbStorageTest {
         Collection<Film> films = filmDbStorage.getAllFilms();
 
         assertEquals(1, films.size());
+
+        Film film = films.iterator().next();
+        assertEquals(2, film.getGenres().size());
     }
 
     @Test

@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.ReleaseDate;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -32,6 +32,7 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
     private int rate;
-    private Collection<Genre> genres = new ArrayList<>();
+    @Builder.Default
+    private Set<Genre> genres = new LinkedHashSet<>();
     private Mpa mpa;
 }

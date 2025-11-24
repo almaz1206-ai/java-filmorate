@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255),
     login VARCHAR(255) NOT NULL,
     birthday DATE NOT NULL,
-    email VARCHAR(255) NOT NULL
+    email VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- Дружба
