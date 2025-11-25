@@ -1,20 +1,19 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friendShip.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendshipStorage friendshipStorage;
 
     public User addUser(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
@@ -34,7 +33,7 @@ public class UserService {
         return userStorage.updateUser(user);
     }
 
-    public List<User> getAllUsers() {
+    public Collection<User> getAllUsers() {
         return userStorage.getAllUsers();
     }
 
@@ -44,64 +43,30 @@ public class UserService {
         return userStorage.getUserById(id);
     }
 
-    public List<User> getUserFriends(Integer id) {
+    public Collection<User> getUserFriends(Integer id) {
         checkUserIsNotNull(id);
-        User user = getUserById(id);
-
-        return user
-                .getFriends()
-                .stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return userStorage.getUserFriends(id);
     }
 
     public void addFriendToUser(Integer userId, Integer friendId) {
         checkUserIsNotNull(userId);
         checkUserIsNotNull(friendId);
 
-        if (userId.equals(friendId)) {
-            throw new ValidationException("Нельзя добавить самого себя в друзья");
-        }
-
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-
-        if (user.getFriends().contains(friend.getId())) {
-            throw new ValidationException("Пользователи уже являются друзьями");
-        }
-
-        user.getFriends().add(friend.getId());
-        friend.getFriends().add(user.getId());
-        userStorage.updateUser(user);
-        userStorage.updateUser(friend);
+        friendshipStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriendFromUser(Integer userId, Integer friendId) {
         checkUserIsNotNull(userId);
         checkUserIsNotNull(friendId);
 
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-
-        user.getFriends().remove(friend.getId());
-        friend.getFriends().remove(user.getId());
+        friendshipStorage.deleteFriend(userId, friendId);
     }
 
-    public List<User> getCommonFriends(Integer userId, Integer otherUserId) {
+    public Collection<User> getCommonFriends(Integer userId, Integer otherUserId) {
         checkUserIsNotNull(userId);
         checkUserIsNotNull(otherUserId);
 
-        User user = getUserById(userId);
-        User otherUser = getUserById(otherUserId);
-
-        Set<Integer> userFriends = user.getFriends();
-        Set<Integer> otherUserFriends = otherUser.getFriends();
-
-        return userFriends
-                .stream()
-                .filter(otherUserFriends::contains)
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return userStorage.getCommonFriends(userId, otherUserId);
     }
 
     private void checkUserIsNotNull(Integer id) {

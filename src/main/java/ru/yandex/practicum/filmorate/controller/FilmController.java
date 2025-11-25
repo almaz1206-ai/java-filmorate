@@ -46,11 +46,11 @@ public class FilmController {
 
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLikeToFilm(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
-        filmService.removeLikeToFilm(id, userId);
+        filmService.deleteLikeFromFilm(id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10", required = false) Integer count) {
+    public Collection<Film> getPopularFilms(@RequestParam(name = "count", defaultValue = "10", required = false) Integer count) {
         return filmService.getPopularFilms(count);
     }
 }

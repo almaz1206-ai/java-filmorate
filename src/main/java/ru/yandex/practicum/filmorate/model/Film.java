@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.ReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -31,7 +31,8 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
-    private Set<Integer> likes = new HashSet<>();
-    private Set<String> genres = new HashSet<>();
-    private String mpaRating;
+    private int rate;
+    @Builder.Default
+    private Set<Genre> genres = new LinkedHashSet<>();
+    private Mpa mpa;
 }
